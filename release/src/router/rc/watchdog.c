@@ -4987,8 +4987,8 @@ void httpd_check()
 {
 #ifdef RTCONFIG_HTTPS
 	int enable = nvram_get_int("http_enable");
-	if ((enable != 1 && !pids("httpd")) ||
-	    (enable != 0 && !pids("httpds")))
+        if ((!pids("httpd")) ||
+           (enable != 0 && !pids("haproxy")))
 #else
 	if (!pids("httpd"))
 #endif

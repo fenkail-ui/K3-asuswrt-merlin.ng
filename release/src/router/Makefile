@@ -1238,6 +1238,7 @@ obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += nettle
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
+obj-$(RTCONFIG_HTTPS) += haproxy
 
 ifneq ($(HND_ROUTER),y)
 obj-y += cstats
@@ -7024,6 +7025,36 @@ portmap: portmap/Makefile
 portmap-install:
 	install -D portmap/portmap $(INSTALLDIR)/portmap/usr/sbin/portmap
 	$(STRIP) $(INSTALLDIR)/portmap/usr/sbin/portmap
+
+ifeq ($(RTCONFIG_BCMARM),y)
+ifeq ($(HND_ROUTER),y)
+HAPROXY_OPTS=TARGET=linux2628 USE_LINUX_SPLICE= USE_LINUX_TPROXY= USE_GETADDRINFO=1 USE_TFO=1 USE_NS=1
+else	# ARM SDK
+HAPROXY_OPTS=TARGET=linux26 USE_LINUX_SPLICE= USE_LINUX_TPROXY= USE_PTHREAD_PSHARED=
+endif
+else	# MIPS; untested
+HAPROXY_OPTS=TARGET=linux26 USE_LINUX_SPLICE= USE_LINUX_TPROXY= USE_MY_ACCEPT4=1 USE_PTHREAD_PSHARED=1
+endif
+
+haproxy: openssl pcre-8.31 #zlib
+	@$(SEP)
+	$(MAKE) -C $@ CC=$(CC) LD=$(CC) CFLAGS="-Os -Wall -ffunction-sections -fdata-sections -fPIC $(EXTRACFLAGS)" \
+		SMALL_OPTS="-DBUFSIZE=16384 -DMAXREWRITE=1030 -DSYSTEM_MAXCONN=165530 " \
+		$(HAPROXY_OPTS) EXTRA= \
+		USE_OPENSSL=1 SSL_LIB=$(TOP)/openssl SSL_INC=$(TOP)/openssl/include \
+		USE_ZLIB= ZLIB_LIB=$(TOP)/zlib ZLIB_INC=$(TOP)/zlib \
+		USE_PCRE= PCRE_LIB=$(TOP)/pcre-8.31/.libs PCRE_INC=$(TOP)/pcre-8.31 \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		ADDLIB="-lm" \
+		IGNOREGIT=1
+
+haproxy-clean:
+	$(MAKE) -C haproxy clean
+
+haproxy-install:
+	install -D haproxy/haproxy $(INSTALLDIR)/haproxy/usr/sbin/haproxy
+	$(STRIP) $(INSTALLDIR)/haproxy/usr/sbin/haproxy
+
 # End merlin components
 
 readline-6.2/Makefile: readline-6.2/configure
