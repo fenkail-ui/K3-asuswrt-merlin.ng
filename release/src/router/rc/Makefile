@@ -543,6 +543,9 @@ endif
 ifeq ($(RTCONFIG_DNSFILTER),y)
 OBJS += dnsfilter.o
 endif
+ifeq ($(RTCONFIG_HTTPS),y)
+OBJS += haproxy.o
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(RTCONFIG_QTN),y)

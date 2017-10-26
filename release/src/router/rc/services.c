@@ -4021,13 +4021,16 @@ start_httpd(void)
 
 	enable = nvram_get_int("http_enable");
 	if (enable != 0) {
-		logmessage(LOGNAME, "start httpd - SSL");
-		_eval(https_argv, NULL, 0, &pid);
+//		logmessage(LOGNAME, "start httpd - SSL");
+//		_eval(https_argv, NULL, 0, &pid);
+		logmessage(LOGNAME, "start haproxy");
+		start_haproxy();
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 		sleep(1);
 #endif
 	}
-#ifndef RTCONFIG_AIHOME_TUNNEL
+//#ifndef RTCONFIG_AIHOME_TUNNEL
+#if 0	// haproxy needs httpd running
 	if (enable != 1)
 #endif
 #endif
@@ -4054,8 +4057,9 @@ stop_httpd(void)
 	if (pids("httpd"))
 		killall_tk("httpd");
 #ifdef RTCONFIG_HTTPS
-	if (pids("httpds"))
-		killall_tk("httpds");
+	stop_haproxy();
+//	if (pids("httpds"))
+//		killall_tk("httpds");
 #endif
 }
 

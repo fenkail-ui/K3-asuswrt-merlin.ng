@@ -1511,6 +1511,13 @@ extern void dnsfilter6_settings(FILE *fp, char *lan_if, char *lan_ip);
 extern void dnsfilter_setup_dnsmasq(FILE *fp);
 #endif
 
+// haproxy.c
+#ifdef RTCONFIG_HTTPS
+extern void start_haproxy(void);
+extern void stop_haproxy(void);
+int config_haproxy(void);
+#endif
+
 // lan.c
 #ifdef RTCONFIG_TIMEMACHINE
 extern int start_timemachine(void);
