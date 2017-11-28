@@ -2076,4 +2076,6 @@ extern void deauth_guest_sta(char *, char *);
 extern int is_valid_group_id(const char *);
 #endif
 
+#define NVRAM_EXT_FOLDER "/jffs/.nvramext"
+
 #endif	/* !__SHARED_H__ */

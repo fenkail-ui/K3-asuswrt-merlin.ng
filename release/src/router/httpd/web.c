@@ -288,6 +288,10 @@ void add_asus_token(char *token);
 
 void response_nvram_config(webs_t wp, char *config_name, json_object *res, json_object *root);
 
+#ifdef HND_ROUTER
+int ej_nvram_ext_get(int eid, webs_t wp, int argc, char_t ** argv);
+#endif
+
 #if 0
 static int nvram_check_and_set(char *name, char *value);
 #endif
@@ -2933,6 +2937,12 @@ static int validate_apply(webs_t wp, json_object *root) {
 					nvram_modified = 1;
 					_dprintf("set %s=%s\n", tmp, value);
 				}
+			}
+#endif
+#ifdef HND_ROUTER
+			else if(!strncmp(name, "nvext", 5)) {
+				snprintf(tmp, sizeof(tmp), "%s/%s", NVRAM_EXT_FOLDER, name+6);
+				f_write_string(tmp, value, 0, 0);
 			}
 #endif
 #ifdef RTCONFIG_OPENVPN
@@ -21357,6 +21367,9 @@ struct ej_handler ej_handlers[] = {
 #endif
 	{ "get_default_reboot_time", ej_get_default_reboot_time},
 	{ "sysinfo",  ej_show_sysinfo},
+#ifdef HND_ROUTER
+	{ "nvram_ext_get", ej_nvram_ext_get},
+#endif
 #ifdef RTCONFIG_IPV6
 #ifdef RTCONFIG_IGD2
 	{ "ipv6_pinholes",  ej_ipv6_pinhole_array},
@@ -21825,3 +21838,38 @@ err:
 	fcntl(fileno(stream), F_SETOWN, -ret);
 }
 #endif // (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+
+
+#ifdef HND_ROUTER
+int ej_nvram_ext_get(int eid, webs_t wp, int argc, char_t ** argv)
+{
+	char path[100];
+	char *varname, *buffer, *c;
+	char retval=0;
+
+	if (ejArgs(argc, argv, "%s", &varname) < 1) {
+		websError(wp, 400, "Insufficient args\n");
+		return retval;
+	}
+
+	snprintf(path, sizeof (path), "%s/%s", NVRAM_EXT_FOLDER, varname);
+
+	buffer = c = read_whole_file(path);
+	if (buffer) {
+		for (; *c; c++) {
+			if (isprint(*c) &&
+			    *c != '"' && *c != '&' && *c != '<' && *c != '>' && *c != '\\')
+				retval += websWrite(wp, "%c", *c);
+			else if(*c == '\\')
+				retval += websWrite(wp, "%c", *c);
+			else
+				retval += websWrite(wp, "&#%d", *c);
+		}
+		free(buffer);
+	} else {
+		retval += websWrite(wp, "%s", "");
+	}
+	return retval;
+}
+#endif
+

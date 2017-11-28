@@ -64,7 +64,11 @@
 var vpnc_dev_policy_list_array = []
 var vpnc_dev_policy_list_array_ori = [];
 
-var dhcp_staticlist_array = "<% nvram_get("dhcp_staticlist"); %>";
+var dhcp_staticlist_array
+if (hnd_support)
+        dhcp_staticlist_array = "<% nvram_ext_get("dhcp_staticlist"); %>";
+if (dhcp_staticlist_array.length == 0)
+	dhcp_staticlist_array = "<% nvram_get("dhcp_staticlist"); %>";
 
 if(pptpd_support){
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
@@ -84,7 +88,8 @@ var pool_start_end = parseInt(pool_start.split(".")[3]);
 var pool_end_end = parseInt(pool_end.split(".")[3]);
 
 var static_enable = '<% nvram_get("dhcp_static_x"); %>';
-var dhcp_staticlists = '<% nvram_get("dhcp_staticlist"); %>';
+
+var dhcp_staticlists = dhcp_staticlist_array;
 var staticclist_row = dhcp_staticlists.split('&#60');
 
 var lan_domain_curr = '<% nvram_get("lan_domain"); %>';
@@ -393,21 +398,28 @@ function applyRule(){
 		var rule_num = document.getElementById('dhcp_staticlist_table').rows.length;
 		var item_num = document.getElementById('dhcp_staticlist_table').rows[0].cells.length;
 		var tmp_value = "";
+		var tmp_value_ext = "";
 
 		if (document.getElementById('dhcp_staticlist_table').rows[0].cells[0].innerHTML != "<#IPConnection_VSList_Norule#>") {
 			for(i=0; i<rule_num; i++){
 				tmp_value += "<";
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[0].title + ">";
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML + ">";
-				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
+                                
+				tmp_value_ext += "<";
+				tmp_value_ext += document.getElementById('dhcp_staticlist_table').rows[i].cells[0].title + ">";
+				tmp_value_ext += document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML + ">";
+				tmp_value_ext += document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
 			}
 		}
+		// TODO: check against 1000 chars for HND
 		if (tmp_value.length > 2499) {
 			alert("Resulting list of DHCP reservations is too long - remove some, or use shorter names.");
 			return false;
 		}
 
 		document.form.dhcp_staticlist.value = tmp_value;
+		document.form.nvext_dhcp_staticlist.value = tmp_value_ext;
 
 		// Only restart the whole network if needed
 		if ((document.form.dhcp_wins_x.value != dhcp_wins_curr) ||
@@ -877,6 +889,7 @@ function parse_vpnc_dev_policy_list(_oriNvram) {
 <input type="hidden" name="lan_ipaddr" value="<% nvram_get("lan_ipaddr"); %>">
 <input type="hidden" name="lan_netmask" value="<% nvram_get("lan_netmask"); %>">
 <input type="hidden" name="dhcp_staticlist" value="">
+<input type="hidden" name="nvext_dhcp_staticlist" value="">
 <input type="hidden" name="vpnc_dev_policy_list" value="" disabled>
 <input type="hidden" name="vpnc_dev_policy_list_tmp" value="" disabled>
 

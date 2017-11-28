@@ -2863,7 +2863,9 @@ void write_static_leases(FILE *fp)
 		char br_if[IFNAMSIZ];
 	} vlan_nets[VLAN_MAX_NUM], *v;
 #endif
-
+#ifdef HND_ROUTER
+	char nvext[128];
+#endif
 	if (!fp)
 		return;
 
@@ -2871,7 +2873,13 @@ void write_static_leases(FILE *fp)
 	if (!fp2)
 		return;
 
-	nv = nvp = strdup(nvram_safe_get("dhcp_staticlist"));
+#ifdef HND_ROUTER
+	snprintf(nvext, sizeof (nvext), "%s/%s", NVRAM_EXT_FOLDER, "dhcp_staticlist");
+	nv = nvp = read_whole_file(nvext);
+	if (!nv)
+#endif
+		nv = nvp = strdup(nvram_safe_get("dhcp_staticlist"));
+
 	if (!nv) {
 		fclose(fp2);
 		return;
@@ -8483,6 +8491,9 @@ again:
 #if defined(RTCONFIG_UBIFS)
 		eval("rm", "-rf", OVPN_DIR_SAVE);
 #endif
+#endif
+#ifdef HND_ROUTER
+		eval("rm", "-rf", NVRAM_EXT_FOLDER);
 #endif
 
 		if (get_model() == MODEL_RTN53){
