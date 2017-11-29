@@ -405,15 +405,19 @@ function applyRule(){
 				tmp_value += "<";
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[0].title + ">";
 				tmp_value += document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML + ">";
-                                
+
 				tmp_value_ext += "<";
 				tmp_value_ext += document.getElementById('dhcp_staticlist_table').rows[i].cells[0].title + ">";
 				tmp_value_ext += document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML + ">";
 				tmp_value_ext += document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
 			}
 		}
-		// TODO: check against 1000 chars for HND
-		if (tmp_value.length > 2499) {
+		if (hnd_support)
+			var limit = 999;
+		else
+			var limit = 2499;
+
+		if (tmp_value.length > limit) {
 			alert("Resulting list of DHCP reservations is too long - remove some, or use shorter names.");
 			return false;
 		}
