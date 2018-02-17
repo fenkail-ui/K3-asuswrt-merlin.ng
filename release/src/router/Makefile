@@ -1235,6 +1235,7 @@ obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += nettle
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
+obj-y += cryptodev-linux
 
 ifneq ($(HND_ROUTER),y)
 obj-y += cstats
@@ -2470,6 +2471,7 @@ openssl/Makefile:
 	cd openssl && \
 	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
+	-I$(TOP)/cryptodev-linux/ -DHAVE_CRYPTODEV -DUSE_CRYPTDEV_DIGESTS \
 	shared $(OPENSSL_CIPHERS) no-ssl2 no-ssl3
 #	no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
 #	no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
@@ -7021,6 +7023,15 @@ portmap: portmap/Makefile
 portmap-install:
 	install -D portmap/portmap $(INSTALLDIR)/portmap/usr/sbin/portmap
 	$(STRIP) $(INSTALLDIR)/portmap/usr/sbin/portmap
+
+cryptodev-linux:
+	$(MAKE) -C $@ KERNEL_DIR=$(LINUXDIR) CC=$(CROSS_COMPILE_64)gcc RANLIB=$(CROSS_COMPILE_64)ranlib CFLAGS="-O3" \
+		prefix=$(LINUX_INC_DIR) CCOPTS="-march=armv8-a -mabi=lp64" ARCH="arm64" LD=$(CROSS_COMPILE_64)ld
+#		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" CROSS_COMPILE=$(CROSS_COMPILE_64)
+
+cryptodev-linux-install:
+	@cp -f cryptodev-linux/cryptodev.ko $(INSTALLDIR)/../modules/lib/modules/4.1.27/extra/
+
 # End merlin components
 
 readline-6.2/Makefile: readline-6.2/configure
