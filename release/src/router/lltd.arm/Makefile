@@ -40,7 +40,7 @@ else ifeq ($(BUILD_NAME),RT-AC86U)
 else ifeq ($(BUILD_NAME),AC2900)
 	install icon.ac2900.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.ac2900.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME),RT-AC3100)
+else ifeq ($(strip $(BUILD_NAME)),$(filter $(BUILD_NAME),RT-AC3100 RT-K3))
 	install icon.rtac3100.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtac3100.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME),RT-AC5300)

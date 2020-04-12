@@ -88,6 +88,11 @@ MODEL = $(subst -,_,$(BUILD_NAME))
 else
 MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 endif
+ifeq ($(MODEL),RTK3)
+export RTK3=y
+export CFLAGS += -DRTK3
+MODEL:=RTAC3100
+endif
 export CFLAGS += -D$(MODEL)
 export $(MODEL)=y
 

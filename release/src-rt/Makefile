@@ -175,6 +175,11 @@ MODEL = $(subst -,_,$(BUILD_NAME))
 else
 MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 endif
+ifeq ($(MODEL),RTK3)
+export RTK3=y
+export CFLAGS += -DRTK3
+MODEL:=RTAC3100
+endif
 export MODEL
 export CFLAGS += -D$(MODEL)
 export $(MODEL):=y
@@ -389,7 +394,11 @@ endif
 	@echo '#define RT_EXTENDNO "$(EXTENDNO)$(BUILDREV)"' >> router/shared/version.h
 endif
 	@echo '#define RT_SWPJVERNO "$(SWPJVERNO)"' >> router/shared/version.h
+ifeq ($(RTK3),y)
+	@echo '#define RT_BUILD_NAME "RT-AC3100"' >> router/shared/version.h
+else
 	@echo '#define RT_BUILD_NAME "$(BUILD_NAME)"' >> router/shared/version.h
+endif
 	@echo '#define RT_BUILD_INFO "$(BUILD_TIME) $(BUILD_USER)@$(BUILD_INFO)"' >> router/shared/version.h
 	@echo '#endif' >> router/shared/version.h
 ifneq ($(NVRAM_ENCRYPT),$(filter $(NVRAM_ENCRYPT),n))
@@ -401,7 +410,11 @@ else
 endif
 	@echo '#endif' >> router/shared/version.h
 endif
+ifeq ($(RTK3),y)
+	@echo 'RT-AC3100 $(SERIALNO)_$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
+else
 	@echo '$(BUILD_NAME) $(SERIALNO)_$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
+endif
 	@echo 'EXTENDNO=$(EXTENDNO)$(BUILDREV)' > router/extendno.conf
 
 rt_ver_ntools:
