@@ -77,6 +77,10 @@
 #include <cfg_event.h>
 #endif
 
+#ifdef RTK3
+#include "k3.h"
+#endif
+
 #define BCM47XX_SOFTWARE_RESET	0x40		/* GPIO 6 */
 #define RESET_WAIT		2		/* seconds */
 #define RESET_WAIT_COUNT	RESET_WAIT * 10 /* 10 times a second */
@@ -4033,7 +4037,11 @@ void fake_etlan_led(void)
 	allstatus = 1;
 #endif
 
+#ifdef RTK3
+	if (!GetPhyStatusk3(0)) {
+#else
 	if (!GetPhyStatus(0)) {
+#endif
 		if (lstatus)
 #ifdef GTAC5300
 			aggled_control(AGGLED_ACT_ALLOFF);

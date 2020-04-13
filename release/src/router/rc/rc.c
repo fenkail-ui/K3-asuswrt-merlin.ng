@@ -24,6 +24,10 @@
 #include <lp5523led.h>
 #endif
 
+#ifdef RTK3
+#include "k3.h"
+#endif
+
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
@@ -274,12 +278,24 @@ static int rctest_main(int argc, char *argv[])
 		setup_passwd();
 	}
 #endif
+#ifdef RTK3
+	else if (strcmp(argv[1], "GetPhyStatus")==0) {
+		printf("Get Phy status:%d\n", GetPhyStatusk3(0));
+	}
+	else if (strcmp(argv[1], "Get_PhyStatus")==0) {
+		GetPhyStatusk3(1);
+	}
+	else if (strcmp(argv[1], "GetExtPhyStatus")==0) {
+		printf("Get Ext Phy status:%d\n", GetPhyStatusk3(atoi(argv[2])));
+	}
+#else
 	else if (strcmp(argv[1], "GetPhyStatus")==0) {
 		printf("Get Phy status:%d\n", GetPhyStatus(0));
 	}
 	else if (strcmp(argv[1], "GetExtPhyStatus")==0) {
 		printf("Get Ext Phy status:%d\n", GetPhyStatus(atoi(argv[2])));
 	}
+#endif
 #ifdef HND_ROTUER
 	else if (strcmp(argv[1], "memdw")==0) {
 		const char *dws[]={"dw", argv[2]};

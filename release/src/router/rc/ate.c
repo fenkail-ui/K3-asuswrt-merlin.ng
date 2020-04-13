@@ -19,6 +19,9 @@
 #ifdef RTCONFIG_QCA_PLC_UTILS
 #include <plc_utils.h>
 #endif
+#ifdef RTK3
+#include "k3.h"
+#endif
 
 #define MULTICAST_BIT  0x0001
 #define UNIQUE_OUI_BIT 0x0002
@@ -1358,7 +1361,11 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
 		GetPhyStatus(1);
 #else
+#ifdef RTK3
+		if (!GetPhyStatusk3(1) && nvram_match("ATEMODE", "1")) {
+#else
 		if (!GetPhyStatus(1) && nvram_match("ATEMODE", "1")) {
+#endif
 			puts("ATE_ERROR");
 		}
 #endif

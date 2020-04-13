@@ -22992,7 +22992,11 @@ ej_get_wan_lan_status(int eid, webs_t wp, int argc, char **argv)
 	struct json_object *wanLanCount = NULL;
 	struct json_object *wanLanStatus = NULL;
 
+#ifdef RTK3
+	fp = popen("rc Get_PhyStatus", "r");
+#else
 	fp = popen("ATE Get_WanLanStatus", "r");
+#endif
 	if (fp == NULL)
 		goto error;
 
