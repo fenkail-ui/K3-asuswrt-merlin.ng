@@ -3,11 +3,8 @@ include ../common.mak
 ASUSWRTTOOLSDIR = $(SRCBASE)/router/tools/Lnx_AsusWrtDictPrep
 ASUSWRTTOOLSDIR2 = $(SRCBASE)/router/tools/Lnx_ToolHelp
 
-ifneq ($(BUILD_NAME),RT-K3)
 MODEL_NAME=$(BUILD_NAME)
-else
-MODEL_NAME=RT-AC3100
-endif
+
 MODELS_HAVE_USB3 = AC2900 \
 	BRT-AC828 RT-AD7200 \
 	DSL-AC68U \
