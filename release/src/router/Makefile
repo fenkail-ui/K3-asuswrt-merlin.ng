@@ -726,6 +726,9 @@ obj-y += rc
 obj-y += rom
 obj-y += others
 obj-y += libpasswd
+ifeq ($(RTK3),y)
+obj-y += k3screenctrl
+endif
 obj-y += httpd json-c
 obj-$(RTCONFIG_VISUALIZATION) += sqlite3 json-c libxml2 visdcoll visdcon
 obj-y += www
@@ -2238,6 +2241,9 @@ roldconf: config/conf
 	$(MAKE) shared-clean libdisk-clean rc-clean nvram$(BCMEX)$(EX7)-clean httpd-clean prebuilt-clean libbcmcrypto-clean
 #	@$(MAKE) iptables-clean ebtables-clean pppd-clean zebra-clean openssl-clean mssl-clean pppd-clean
 	$(MAKE) dnsmasq-clean iproute2-clean networkmap-clean
+ifeq ($(RTK3),y)
+	$(MAKE) k3screenctrl-clean
+endif
 ifeq ($(RTCONFIG_BCMARM),y)
 	$(MAKE) compressed-clean
 endif
@@ -2606,7 +2612,7 @@ networkmap: shared json-c
 networkmap-install:
 	$(MAKE) -C networkmap INSTALLDIR=$(INSTALLDIR)/networkmap install
 
-aura_sw: aura_sw 
+aura_sw: aura_sw
 
 aura_sw-install:
 	$(MAKE) -C aura_sw INSTALLDIR=$(INSTALLDIR)/aura_sw install
@@ -2995,6 +3001,22 @@ endif
 iptables-1.4.x-clean:
 	[ ! -f iptables-1.4.x/Makefile ] || $(MAKE) -C iptables-1.4.x KERNEL_DIR=$(LINUX_INC_DIR) distclean
 	@rm -f iptables-1.4.x/Makefile
+
+k3screenctrl/Makefile:
+	cd k3screenctrl && autoreconf -i -f && CC=$(CC) STRIP=$(STRIP) \
+		$(CONFIGURE) --target=arm-linux --host=arm-linux --build=x86_64-linux-gnu --prefix=""
+
+k3screenctrl: k3screenctrl/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+k3screenctrl-clean:
+	[ ! -f k3screenctrl/Makefile ] || $(MAKE) -C k3screenctrl -f Makefile distclean
+
+k3screenctrl-install: k3screenctrl
+	install -D k3screenctrl/src/k3screenctrl $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenctrl
+	install -D k3screenctrl/src/k3screenbg $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenbg
+	$(STRIP) $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenctrl
+	$(STRIP) $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenbg
 
 miniupnpd/config.h: shared/version.h
 ifeq ($(RTCONFIG_IGD2),y)
@@ -3630,7 +3652,7 @@ accel-pptp/stamp-h1: kernel_header $(LINUX_INC_DIR)/include/linux/version.h
 endif
 endif
 	cd accel-pptp && CFLAGS="-g -O2 $(EXTRACFLAGS) -idirafter $(KDIR)/include $(if $(RTCONFIG_VPNC), -DRTCONFIG_VPNC,)" \
-	$(CONFIGURE) --prefix=/usr --build=i686-linux KDIR=$(KDIR) PPPDIR=$(TOP)/pppd 
+	$(CONFIGURE) --prefix=/usr --build=i686-linux KDIR=$(KDIR) PPPDIR=$(TOP)/pppd
 	touch $@
 
 accel-pptp: pppd accel-pptp/stamp-h1
@@ -3910,7 +3932,7 @@ tcpdump-4.4.0-clean:
 	[ ! -f tcpdump-4.4.0/Makefile ] || $(MAKE) -C tcpdump-4.4.0 clean
 	@rm -f tcpdump-4.4.0/stamp-h1
 
-traceroute-2.1.0/stamp-h1: 
+traceroute-2.1.0/stamp-h1:
 	touch $@
 
 traceroute-2.1.0: traceroute-2.1.0/stamp-h1
@@ -6421,7 +6443,7 @@ qca-wifi-fw-qca9888/stamp-h1:
 qca-wifi-fw-qca9888: qca-wifi-fw-qca9888/stamp-h1
 	$(MAKE) -C $@
 
-qca-wifi-fw-qca9888-install: 
+qca-wifi-fw-qca9888-install:
 	$(MAKE) -C qca-wifi-fw-qca9888 install
 
 qca-wifi.collard-10.4: iproute2-3.x
@@ -6914,7 +6936,7 @@ udev-173-install: udev-173
 libical-2.0.0/Makefile: libical-2.0.0/CMakeLists.txt
 	cd libical-2.0.0 && cmake -DCMAKE_INSTALL_PREFIX=/usr \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_EXE_LINKER_FLAGS="-L$(STAGEDIR)/usr/local/lib -ldl -lpthread" 
+	-DCMAKE_EXE_LINKER_FLAGS="-L$(STAGEDIR)/usr/local/lib -ldl -lpthread"
 
 libical-2.0.0: libical-2.0.0/Makefile
 	$(MAKE) -C $@ && $(MAKE) $@-stage
@@ -7478,7 +7500,7 @@ amas-utils: json-c openssl nvram${BCMEX}$(EX7)
 	cd amas-utils && \
         CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
         make all
-        
+
 amas-utils-clean:
 	cd amas-utils && make clean
 
@@ -7590,9 +7612,9 @@ quicksec-7.0-install:
 
 quicksec-7.0-clean:
 	-@$(MAKE) -C quicksec-7.0/build/quicksec/linux/policymanager clean
-	
+
 PMS_DBapis/stamp-h1:
-	@touch $@ 
+	@touch $@
 
 PMS_DBapis:PMS_DBapis/stamp-h1
 	CC=$(CC) $(MAKE) -C PMS_DBapis
