@@ -11031,6 +11031,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #ifndef RTCONFIG_LANTIQ
 			nvram_set("success_start_service", "1");
 			force_free_caches();
+#ifdef RTK3
+			k3_init_done();
+#endif
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -11097,7 +11100,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 		} while (ret == -1);
 		state = info.si_signo;
 #if !(defined(HND_ROUTER) && defined(RTCONFIG_HNDMFG))
-		TRACE_PT("recv signal %d from pid [%u%s%s] (from %s)\n", info.si_signo, info.si_pid, ((info.si_code <= 0) ? ":" : ""), ((info.si_code <= 0) ? get_process_name_by_pid(info.si_pid) : ""), (info.si_code <= 0) ? "user" : "kernel");
+		if (info.si_signo != SIGALRM) {
+			TRACE_PT("recv signal %d from pid [%u%s%s] (from %s)\n", info.si_signo, info.si_pid, ((info.si_code <= 0) ? ":" : ""), ((info.si_code <= 0) ? get_process_name_by_pid(info.si_pid) : ""), (info.si_code <= 0) ? "user" : "kernel");
+		}
 #endif
 #if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
 		/* free pagecache */
