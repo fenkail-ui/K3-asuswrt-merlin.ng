@@ -4192,7 +4192,21 @@ start_acsd()
 #endif
 
 	stop_acsd();
-
+#ifdef RTK3
+	int tmpval;
+	if (nvram_match("wl0_cpenable","1"))
+	{
+		tmpval = atoi(nvram_safe_get("wl0_custompower"));
+		printf("**** Set Tx power(2.4G): %d dbm\n", tmpval);
+		eval("wlk", "-i", "eth1", "txpwr1", "-o", "-d", MIN(tmpval, 31));
+	}
+	if (nvram_match("wl1_cpenable","1"))
+	{
+		tmpval = atoi(nvram_safe_get("wl1_custompower"));
+		printf("**** Set Tx power(5G): %d dbm\n", tmpval);
+		eval("wlk", "-i", "eth2", "txpwr1", "-o", "-d", MIN(tmpval, 31));
+	}
+#endif
 	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")))
 #ifndef RTCONFIG_BCM_7114
 		ret = eval("/usr/sbin/acsd");
