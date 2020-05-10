@@ -8,7 +8,7 @@
 <meta name="svg.render.forceflash" content="false" />	
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Temperature</title>
+<title><#Web_Title#> - <#Temperatures#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -127,7 +127,7 @@ function changeTempUnit(num){
 								<tr bgcolor="#4D595D" style="height:10px">
 								  <td valign="top">
 									  <div>&nbsp;</div>
-									  <div class="formfonttitle"><#menu5_6#> - Temperature</div>
+									  <div class="formfonttitle"><#menu5_6#> - <#Temperatures#></div>
 									  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									  <!--div class="formfontdesc"><#PerformaceTuning_desc#></div-->
 									</td>
