@@ -122,6 +122,14 @@ var ram_usage_array = new Array(array_size);
 for(i=0;i<array_size;i++){
 	ram_usage_array[i] = 101;
 }
+var temperature_array = new Array();
+var temp_array_size = 46;
+for(i=0;i<3;i++){
+	temperature_array[i] = new Array();
+	for(j=0;j<temp_array_size;j++){
+		temperature_array[i][j] = 101;
+	}
+}
 /*End*/
 
 var last_rx = 0;
@@ -133,6 +141,9 @@ var current_tx = 0;
 var qos_enable = "<% nvram_get("qos_enable"); %>";
 var qos_ibw = "<% nvram_get("qos_ibw"); %>";
 var qos_obw = "<% nvram_get("qos_obw"); %>";
+curr_coreTmp_cpu = "<% get_cpu_temperature(); %>";
+curr_coreTmp_2 = "<% sysinfo("temperature.2"); %>".replace("&deg;C", "");
+curr_coreTmp_5 = "<% sysinfo("temperature.5"); %>".replace("&deg;C", "");
 
 function initial(){
 	generate_cpu_field();
@@ -180,6 +191,7 @@ function initial(){
 	}
 
 	detect_CPU_RAM();
+	update_coretmp();
 	get_ethernet_ports();
 
 	var table_height = document.getElementById("rt_table").clientHeight;
@@ -298,6 +310,48 @@ function detect_CPU_RAM(){
 				setTimeout("detect_CPU_RAM();", 2000);
 			}
 		});
+	}
+}
+
+function update_coretmp(e){
+  $.ajax({
+    url: '/ajax_coretmp.asp',
+    dataType: 'script',
+
+    error: function(xhr){
+		update_coretmp();
+    },
+    success: function(response){
+			render_Temperature(curr_coreTmp_2, curr_coreTmp_5, curr_coreTmp_cpu);
+			setTimeout("update_coretmp();", 2000);
+		}
+  });
+}
+
+function render_Temperature(_coreTemp_2, _coreTemp_5, _cpuTemp){
+	var temp_pt = "";
+	var tmp = 0;
+	var coreTmp = new Array();
+	coreTmp[0] = _coreTemp_2;
+	coreTmp[1] = _coreTemp_5;
+	coreTmp[2] = _cpuTemp;
+
+	$("#temper_2").html(_coreTemp_2 + "°C");
+	$("#temper_5").html(_coreTemp_5 + "°C");
+	$("#temper_cpu").html(_cpuTemp + "°C");
+
+	for(i=0;i<3;i++){
+		temp_pt = "";
+		tmp = Math.max(parseInt(coreTmp[i]), 20);
+		tmp = Math.min(parseInt(coreTmp[i]), 100);
+		temperature_array[i].push(100 - 100*(tmp-20)/80);
+		temperature_array[i].splice(0,1);
+
+		for(j=0;j<temp_array_size;j++){
+			temp_pt += j*6 +","+ temperature_array[i][j] + " ";
+		}
+
+		document.getElementById('temp'+i+'_graph').setAttribute('points', temp_pt);
 	}
 }
 
@@ -596,7 +650,7 @@ function adjust_unit(value) {
                 <table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="net" style="margin: 0px 8px;">
 			<tr>
 				<td colspan="3">
-					<div class="title">Internet Traffic</div>
+					<div class="title"><#Status_Traffic#></div>
 					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
 				</td>
 			</tr>
@@ -607,7 +661,7 @@ function adjust_unit(value) {
 					</div>
 				</td>
 				<td>
-					<div>Down:</div>
+					<div><#Status_Download#>:</div>
 				</td>
 				<td style="text-align:right;padding-right:10px;">
 					<div id="rx-current">-- KB/s</div>
@@ -620,7 +674,7 @@ function adjust_unit(value) {
 					</div>
 				</td>
 				<td>
-					<div>Up:</div>
+					<div><#Status_Upload#>:</div>
 				</td>
 				<td style="text-align:right;padding-right:10px;">
 					<div id="tx-current">-- KB/s</div>
@@ -738,6 +792,74 @@ function adjust_unit(value) {
 				</td>
 			</tr>
 			</table>
+			<tr>
+				<td style="border-bottom:5px #2A3539 solid;padding:0px 10px 0px 10px;"></td>
+			</tr>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div>
+			<table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" style="margin: 0px 8px;">
+			<tr>
+				<td colspan="3">
+					<div class="title"><#Temperatures#></div>
+					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
+				</td>
+			</tr>
+			<tr class="ram_table">
+				<td>
+					<div>2.4 GHz</div>
+					<div id="temper_2" style="color:#FF9000;"></div>
+				</td>
+				<td>
+					<div>5 GHz</div>
+					<div id="temper_5" style="color:#33CCFF;"></div>
+				</td>
+				<td>
+					<div>CPU</div>
+					<div id="temper_cpu" style="color:#00FF33;"></div>
+				</td>
+			</tr>
+			<tr style="height:100px;" class="IE8HACK">
+				<td colspan="3">
+					<div style="margin:0px 11px 0px 11px;background-color:black;">
+						<svg width="270px" height="100px">
+							<g>
+								<line stroke-width="1" stroke-opacity="1"   stroke="rgb(255,255,255)" x1="0" y1="0%"   x2="100%" y2="0%" />
+								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="25%"  x2="100%" y2="25%" />
+								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="50%"  x2="100%" y2="50%" />
+								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="75%"  x2="100%" y2="75%" />
+								<line stroke-width="1" stroke-opacity="1"   stroke="rgb(255,255,255)" x1="0" y1="100%" x2="100%" y2="100%" />
+							</g>
+							<g>
+								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="98%">20°C</text>
+								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="80%">40°C</text>
+								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="55%">60°C</text>
+								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="30%">80°C</text>
+								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="11%">100°C</text>
+							</g>
+							<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="0"   y1="0%" x2="0"   y2="100%" id="tick1" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="30"  y1="0%" x2="30"  y2="100%" id="tick2" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="60"  y1="0%" x2="60"  y2="100%" id="tick3" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="90"  y1="0%" x2="90"  y2="100%" id="tick4" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="120" y1="0%" x2="120" y2="100%" id="tick5" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="150" y1="0%" x2="150" y2="100%" id="tick6" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="180" y1="0%" x2="180" y2="100%" id="tick7" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="210" y1="0%" x2="210" y2="100%" id="tick8" />
+							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="240" y1="0%" x2="240" y2="100%" id="tick9" />
+							<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="270" y1="0%" x2="270" y2="100%" id="tick10" />
+
+							<polyline id="temp0_graph" style="fill:none;stroke:#FF9000;stroke-width:1;width:200px;"  points=""></polyline>
+							<polyline id="temp1_graph" style="fill:none;stroke:#33CCFF;stroke-width:1;width:200px;"  points=""></polyline>
+							<polyline id="temp2_graph" style="fill:none;stroke:#00FF33;stroke-width:1;width:200px;"  points=""></polyline>
+						</svg>
+					</div>
+				</td>
+			</tr>
+			</table>
 		</div>
 	</td>
 </tr>
@@ -756,12 +878,15 @@ function adjust_unit(value) {
 				</tr>
 				<tr>
 					<td>
-						<div style="overflow-x:hidden;height:190px;">
+						<div style="overflow-x:hidden;height:155px;">
 							<div id="tableContainer" style="margin-top:-10px;"></div>
 						</div>
 					</td>
 				</tr>
 			</table>
+			<tr>
+				<td style="border-bottom:5px #2A3539 solid;padding:0px 10px 0px 10px;"></td>
+			</tr>
 		</div>
 	</td>
 </tr>
